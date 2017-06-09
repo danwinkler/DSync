@@ -294,6 +294,7 @@ public class DServer extends DEndPoint
 						{
 							c.sendTCP( packet.m );
 							i.remove();
+							mpPool.free( packet );
 						}
 					}
 				}
