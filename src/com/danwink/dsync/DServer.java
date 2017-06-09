@@ -215,7 +215,6 @@ public class DServer extends Listener
 	
 	public void received( Connection c, Object o ) 
 	{
-		System.out.println( o );
 		if( o instanceof Message )
 		{
 			Message m = (Message)o;
