@@ -1,12 +1,9 @@
 package com.danwink.dsync;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentLinkedDeque;
-
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.FrameworkMessage;
-import com.esotericsoftware.kryonet.Listener;
 
 
 /**
@@ -25,15 +22,9 @@ import com.esotericsoftware.kryonet.Listener;
  * @author Daniel Winkler
  *
  */
-public class DClient extends Listener
+public class DClient extends DEndPoint
 {
-	public static final String CONNECTED = "net.CONNECTED";
-	public static final String DISCONNECTED = "net.DISCONNECTED";
-	
-	boolean handleMessages = true;
-	
 	Client c;
-	ConcurrentLinkedDeque<Message> messages = new  ConcurrentLinkedDeque<Message>();
 	
 	@SuppressWarnings( "rawtypes" )
 	ListenerManager<ClientMessageListener> listenerManager;
@@ -52,11 +43,6 @@ public class DClient extends Listener
 	{
 		c.start();
 		c.connect( 2500, address, tcpPort, udpPort );	
-	}
-	
-	public void update()
-	{
-		if( handleMessages ) processMessages();
 	}
 	
 	@SuppressWarnings( "rawtypes" )
@@ -78,26 +64,15 @@ public class DClient extends Listener
 		sendTCP( key, null );
 	}
 	
-	public Message getNextClientMessage()
-	{	
-		return messages.removeFirst();
-	}
-	
-
-	public boolean hasClientMessages() 
-	{
-		return !messages.isEmpty();
-	}
-
 	public interface ClientMessageListener<E>
 	{
 		public void receive( E message );
 	}
 	
 	@SuppressWarnings( { "unchecked" } )
-	public void processMessages()
+	public void update()
 	{
-		while( hasClientMessages() )
+		while( hasMessages() )
 		{
 			Message m = messages.removeFirst();
 			if( m.value instanceof FrameworkMessage.KeepAlive ) {

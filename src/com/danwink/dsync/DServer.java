@@ -10,15 +10,12 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
-public class DServer extends Listener
+public class DServer extends DEndPoint
 {
 	public static final int WRITE_BUFFER = 5000000;
 	public static final int OBJECT_BUFFER = 32000;
-	public static final String CONNECTED = "net.CONNECTED";
-	public static final String DISCONNECTED = "net.CONNECTED";
 	
 	Thread messageSenderThread;
 	public ThreadRunner tr;
@@ -26,7 +23,6 @@ public class DServer extends Listener
 	
 	boolean handleMessages = true;
 	
-	public ConcurrentLinkedDeque<Message> messages = new  ConcurrentLinkedDeque<Message>();
 	ConcurrentLinkedDeque<MessagePacket> messagesToSend = new  ConcurrentLinkedDeque<MessagePacket>();
 	HashMap<Integer, Connection> connections = new HashMap<Integer, Connection>();
 	ArrayList<Connection> connectionsArr = new ArrayList<Connection>();
@@ -65,16 +61,6 @@ public class DServer extends Listener
 	{	
 		tr = new ThreadRunner( fps );
 		tr.start( u );
-	}
-	
-	public Message getNextServerMessage()
-	{	
-		return messages.removeFirst();
-	}
-
-	public boolean hasServerMessages() 
-	{
-		return !messages.isEmpty();
 	}
 	
 	public void sendTCP( int id, Object key, Object value )
@@ -188,7 +174,7 @@ public class DServer extends Listener
 	@SuppressWarnings( { "unchecked" } )
 	public void processMessages()
 	{
-		while( hasServerMessages() )
+		while( hasMessages() )
 		{
 			Message m = messages.removeFirst();
 			listenerManager.call( m.key, l -> {
