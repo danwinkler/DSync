@@ -6,10 +6,14 @@ import com.esotericsoftware.kryonet.Listener;
 
 public class DEndPoint extends Listener
 {
-	public static final String CONNECTED = "net.CONNECTED";
-	public static final String DISCONNECTED = "net.DISCONNECTED";
+	public static final String CONNECTED = "dsync.CONNECTED";
+	public static final String DISCONNECTED = "dsync.DISCONNECTED";
 	
-	public ConcurrentLinkedDeque<Message> messages = new  ConcurrentLinkedDeque<Message>();
+	public static final String DEFAULT_STATE = "dsync.DEFAULT";
+	public static final String SET_STATE = "dsync.SET_STATE";
+	
+	public ConcurrentLinkedDeque<Message> messages = new ConcurrentLinkedDeque<Message>();
+	public Object state = DEFAULT_STATE;
 	
 	public Message getNextMessage()
 	{	

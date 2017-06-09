@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
+import com.danwink.dsync.DClient.ClientMessageListener;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 
@@ -30,13 +31,13 @@ public class DServer extends DEndPoint
 	Pool<MessagePacket> mpPool = Pools.get( MessagePacket.class );
 	
 	@SuppressWarnings( "rawtypes" )
-	ListenerManager<ServerMessageListener> listenerManager;
+	HashMap<Object, ListenerManager<ServerMessageListener>> listeners;
 	
 	Server server;
 	
 	public DServer()
 	{
-		listenerManager = new ListenerManager<>();
+		listeners = new HashMap<>();
 		
 		server = new Server( WRITE_BUFFER, OBJECT_BUFFER );
 		server.getKryo().register( Message.class );
@@ -177,7 +178,7 @@ public class DServer extends DEndPoint
 		while( hasMessages() )
 		{
 			Message m = messages.removeFirst();
-			listenerManager.call( m.key, l -> {
+			listeners.get( state ).call( m.key, l -> {
 				l.receive( m.sender, m.value );
 			});
 		}
@@ -185,7 +186,29 @@ public class DServer extends DEndPoint
 	
 	public <E> void on( Object key, ServerMessageListener<E> listener ) 
 	{
-		listenerManager.on( key, listener );
+		on( DEFAULT_STATE, key, listener );
+	}
+	
+	public <E> void on( Object state, Object key, ServerMessageListener<E> listener ) 
+	{
+		ListenerManager<ServerMessageListener> lm = listeners.get( state );
+		if( lm == null )
+		{
+			lm = new ListenerManager<>();
+			listeners.put( state, lm );
+		}
+		lm.on( key, listener );
+	}
+	
+	public void setState( Object o )
+	{
+		state = o;
+		server.sendToAllTCP( new Message( SET_STATE, o ) );
+	}
+	
+	public void clearListeners()
+	{
+		listeners.clear();
 	}
 	
 	@SuppressWarnings( "rawtypes" )

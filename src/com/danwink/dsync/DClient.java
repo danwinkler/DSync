@@ -1,6 +1,8 @@
 package com.danwink.dsync;
 
 import java.io.IOException;
+import java.util.HashMap;
+
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.FrameworkMessage;
@@ -27,11 +29,12 @@ public class DClient extends DEndPoint
 	Client c;
 	
 	@SuppressWarnings( "rawtypes" )
-	ListenerManager<ClientMessageListener> listenerManager;
+	
+	HashMap<Object, ListenerManager<ClientMessageListener>> listeners;
 	
 	public DClient() 
 	{
-		listenerManager = new ListenerManager<>();
+		listeners = new HashMap<>();
 		
 		c = new Client( 128000, 32000 );
 		c.getKryo().register( Message.class );
@@ -77,22 +80,35 @@ public class DClient extends DEndPoint
 			Message m = messages.removeFirst();
 			if( m.value instanceof FrameworkMessage.KeepAlive ) {
 				System.out.println( "KEEP ALIVE INTERCEPTED ON BOT" );
-				continue;
+			} else if( m.key == SET_STATE ) {
+				state = m.value;
+			} else {
+				listeners.get( state ).call( m.key, l -> {
+					l.receive( m.value );
+				});
 			}
-			listenerManager.call( m.key, l -> {
-				l.receive( m.value );
-			});
 		}
 	}
 	
 	public <E> void on( Object key, ClientMessageListener<E> listener ) 
 	{
-		listenerManager.on( key, listener );
+		on( DEFAULT_STATE, key, listener );
+	}
+	
+	public <E> void on( Object state, Object key, ClientMessageListener<E> listener ) 
+	{
+		ListenerManager<ClientMessageListener> lm = listeners.get( state );
+		if( lm == null )
+		{
+			lm = new ListenerManager<>();
+			listeners.put( state, lm );
+		}
+		lm.on( key, listener );
 	}
 	
 	public void clearListeners()
 	{
-		listenerManager.clear();
+		listeners.clear();
 	}
 	
 	//Listener
