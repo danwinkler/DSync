@@ -31,10 +31,12 @@ public class DClient extends DEndPoint
 	@SuppressWarnings( "rawtypes" )
 	
 	HashMap<Object, ListenerManager<ClientMessageListener>> listeners;
+	ListenerManager<StateChangedListener> stateListeners;
 	
 	public DClient() 
 	{
 		listeners = new HashMap<>();
+		stateListeners = new ListenerManager<>();
 		
 		c = new Client( 128000, 32000 );
 		c.getKryo().register( Message.class );
@@ -72,6 +74,11 @@ public class DClient extends DEndPoint
 		public void receive( E message );
 	}
 	
+	public interface StateChangedListener
+	{
+		public void changed( Object state );
+	}
+	
 	@SuppressWarnings( { "unchecked" } )
 	public void update()
 	{
@@ -82,6 +89,9 @@ public class DClient extends DEndPoint
 				System.out.println( "KEEP ALIVE INTERCEPTED ON BOT" );
 			} else if( m.key == SET_STATE ) {
 				state = m.value;
+				stateListeners.call( l -> {
+					l.changed( state );
+				});
 			} else {
 				listeners.get( state ).call( m.key, l -> {
 					l.receive( m.value );
@@ -104,6 +114,11 @@ public class DClient extends DEndPoint
 			listeners.put( state, lm );
 		}
 		lm.on( key, listener );
+	}
+	
+	public void onStateChanged( StateChangedListener listener )
+	{
+		stateListeners.on( listener );
 	}
 	
 	public void clearListeners()

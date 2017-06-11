@@ -32,6 +32,8 @@ public class SyncClient
 	{
 		this.client = client;
 		
+		client.register( SyncServer.registerClasses );
+		
 		addLm = new ListenerManager<>();
 		initLm = new ListenerManager<>();
 		removeLm = new ListenerManager<>();

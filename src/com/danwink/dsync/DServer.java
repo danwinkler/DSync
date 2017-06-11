@@ -13,6 +13,38 @@ import com.danwink.dsync.DClient.ClientMessageListener;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 
+
+//TODO: user defined handshake protocol
+
+/**
+ * DServer and DClient are an abstraction over Kryonet's Server and Client 
+ * classes. They provide a key/value message model with a callback interface, 
+ * a message buffer, thread helpers, and state management.
+ * 
+ * Every message sent between client to server or server to client(s) is in the
+ * form (Object key, Object value). Generics are (ab)used so that you can have 
+ * message listeners like so:
+ * <code>
+ * server.on( "Hello", (Integer id, Float message) -> {
+ *	//Do something
+ * });
+ * 
+ * server.on( 3, (Integer id, String message) -> {
+ *	//Do something
+ * });
+ * 
+ * server.on( "Message", (id, o) -> {
+ *	//Do something
+ * });
+ * </code>
+ * 
+ * Note that this interface foregoes type safety, so don't try to send a 
+ * message of a certain type on one side while trying to listen for it as a 
+ * different type on the other!
+ * 
+ * @author dan
+ *
+ */
 public class DServer extends DEndPoint
 {
 	public static final int WRITE_BUFFER = 5000000;
@@ -21,8 +53,6 @@ public class DServer extends DEndPoint
 	Thread messageSenderThread;
 	public ThreadRunner tr;
 	boolean running;
-	
-	boolean handleMessages = true;
 	
 	ConcurrentLinkedDeque<MessagePacket> messagesToSend = new  ConcurrentLinkedDeque<MessagePacket>();
 	HashMap<Integer, Connection> connections = new HashMap<Integer, Connection>();
@@ -106,13 +136,15 @@ public class DServer extends DEndPoint
 					lastFrame = now;
 					float dt = deltaTime / 1000000000.f;
 					
+					//This catches errors in user code, so we can try to keep plodding along
+					//TODO: May be incorrect to do this.
 					try
 					{
-						if( handleMessages ) processMessages();
+						processMessages();
 					}
-					catch( Exception e1 )
+					catch( Exception e )
 					{
-						e1.printStackTrace();
+						e.printStackTrace();
 					}
 					
 					u.update( dt );

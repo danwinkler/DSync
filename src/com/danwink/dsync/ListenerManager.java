@@ -5,11 +5,18 @@ import java.util.HashMap;
 
 public class ListenerManager<E>
 {
+	public static final Object DEFAULT_KEY = "dsync.DEFAULT_KEY";
+	
 	HashMap<Object, ArrayList<E>> listeners = new HashMap<>();
 	
 	public ListenerManager()
 	{
 		
+	}
+	
+	public void on( E e )
+	{
+		on( DEFAULT_KEY, e );
 	}
 	
 	public void on( Object key, E e )
@@ -21,6 +28,11 @@ public class ListenerManager<E>
 			listeners.put( key, listenerList );
 		}
 		listenerList.add( e );
+	}
+	
+	public void call( ListenerCaller<E> caller )
+	{
+		call( DEFAULT_KEY, caller );
 	}
 	
 	public void call( Object key, ListenerCaller<E> caller )
