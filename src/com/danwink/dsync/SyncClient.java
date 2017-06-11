@@ -22,8 +22,13 @@ public class SyncClient
 	@SuppressWarnings( "rawtypes" )
 	HashMap<Integer, SyncObject> syncies;
 	
-	@SuppressWarnings( { "unchecked", "rawtypes" } )
 	public SyncClient( DClient client )
+	{
+		this( client, DEndPoint.DEFAULT_STATE );
+	}
+	
+	@SuppressWarnings( { "unchecked", "rawtypes" } )
+	public SyncClient( DClient client, Object state )
 	{
 		this.client = client;
 		
@@ -33,21 +38,21 @@ public class SyncClient
 		
 		syncies = new HashMap<>();
 		
-		client.on( SyncServer.add, (AddPacket p) -> {
+		client.on( state, SyncServer.add, (AddPacket p) -> {
 			syncies.put( p.object.syncId, p.object );
 			addLm.call( p.classHash, l -> {
 				l.object( p.object );
 			});
 		});
 		
-		client.on( SyncServer.initial, (AddPacket p) -> {
+		client.on( state, SyncServer.initial, (AddPacket p) -> {
 			syncies.put( p.object.syncId, p.object );
 			addLm.call( p.classHash, l -> {
 				l.object( p.object );
 			});
 		});
 		
-		client.on( SyncServer.partial, (PartialPacket p) -> {
+		client.on( state, SyncServer.partial, (PartialPacket p) -> {
 			PartialUpdatable pu = (PartialUpdatable)syncies.get( p.id );
 			if( pu == null ) return;
 			if( p.partial instanceof KeepAlive )
@@ -58,12 +63,12 @@ public class SyncClient
 			pu.partialReadPacket( p.partial );
 		});
 		
-		client.on( SyncServer.update, (SyncObject so) -> {
+		client.on( state, SyncServer.update, (SyncObject so) -> {
 			SyncObject s = syncies.get( so.syncId );
 			s.set( so );
 		});
 		
-		client.on( SyncServer.remove, (Integer id) -> {
+		client.on( state, SyncServer.remove, (Integer id) -> {
 			SyncObject so = syncies.remove( id );
 			so.remove = true;
 			

@@ -21,12 +21,17 @@ public class SyncServer
 	
 	public SyncServer( DServer server )
 	{
+		this( server, DEndPoint.DEFAULT_STATE );
+	}
+	
+	public SyncServer( DServer server, Object state )
+	{
 		this.server = server;
 		Arrays.asList( registerClasses ).forEach( c -> {
 			server.server.getKryo().register( c );
 		});
 		
-		server.on( DServer.CONNECTED, (id, o) -> {
+		server.on( state, DServer.CONNECTED, (id, o) -> {
 			for( int i = 0; i < syncies.size(); i++ )
 			{
 				SyncObject so = syncies.get( i );
