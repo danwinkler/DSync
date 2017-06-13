@@ -42,6 +42,10 @@ import com.esotericsoftware.kryonet.Server;
  * message of a certain type on one side while trying to listen for it as a 
  * different type on the other!
  * 
+ * Specifying a null state in an "on" callback is the same as using the
+ * on( Object key, ServerMessageListener<E> callback ) function, in that it
+ * adds the callback as a global callback.
+ * 
  * @author dan
  *
  */
@@ -61,12 +65,14 @@ public class DServer extends DEndPoint
 	Pool<MessagePacket> mpPool = Pools.get( MessagePacket.class );
 	
 	@SuppressWarnings( "rawtypes" )
+	ListenerManager<ServerMessageListener> globalListeners;
 	HashMap<Object, ListenerManager<ServerMessageListener>> listeners;
 	
 	Server server;
 	
 	public DServer()
 	{
+		globalListeners = new ListenerManager<>();
 		listeners = new HashMap<>();
 		
 		server = new Server( WRITE_BUFFER, OBJECT_BUFFER );
@@ -213,23 +219,33 @@ public class DServer extends DEndPoint
 			listeners.get( state ).call( m.key, l -> {
 				l.receive( m.sender, m.value );
 			});
+			globalListeners.call( m.key, l -> {
+				l.receive( m.sender, m.value );
+			});
 		}
 	}
 	
 	public <E> void on( Object key, ServerMessageListener<E> listener ) 
 	{
-		on( DEFAULT_STATE, key, listener );
+		globalListeners.on( key, listener );
 	}
 	
 	public <E> void on( Object state, Object key, ServerMessageListener<E> listener ) 
 	{
-		ListenerManager<ServerMessageListener> lm = listeners.get( state );
-		if( lm == null )
+		if( state == null )
 		{
-			lm = new ListenerManager<>();
-			listeners.put( state, lm );
+			on( key, listener );
 		}
-		lm.on( key, listener );
+		else
+		{
+			ListenerManager<ServerMessageListener> lm = listeners.get( state );
+			if( lm == null )
+			{
+				lm = new ListenerManager<>();
+				listeners.put( state, lm );
+			}
+			lm.on( key, listener );
+		}
 	}
 	
 	public void setState( Object o )
@@ -252,8 +268,7 @@ public class DServer extends DEndPoint
 		}
 	}
 	
-	//Kryonet Server Listeners
-	
+	//Kryonet Server Listeners	
 	public void received( Connection c, Object o ) 
 	{
 		if( o instanceof Message )
@@ -280,6 +295,8 @@ public class DServer extends DEndPoint
 				connectionsArr.add( c );
 			}
 		}
+		
+		sendTCP( c.getID(), SET_STATE, state );
 	}
 	
 	public void disconnected( Connection c )

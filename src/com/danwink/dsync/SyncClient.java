@@ -24,7 +24,7 @@ public class SyncClient
 	
 	public SyncClient( DClient client )
 	{
-		this( client, DEndPoint.DEFAULT_STATE );
+		this( client, null );
 	}
 	
 	@SuppressWarnings( { "unchecked", "rawtypes" } )

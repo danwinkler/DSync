@@ -21,7 +21,7 @@ public class SyncServer
 	
 	public SyncServer( DServer server )
 	{
-		this( server, DEndPoint.DEFAULT_STATE );
+		this( server, null );
 	}
 	
 	public SyncServer( DServer server, Object state )

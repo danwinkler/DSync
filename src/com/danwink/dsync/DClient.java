@@ -30,11 +30,13 @@ public class DClient extends DEndPoint
 	
 	@SuppressWarnings( "rawtypes" )
 	
+	ListenerManager<ClientMessageListener> globalListeners;
 	HashMap<Object, ListenerManager<ClientMessageListener>> listeners;
 	ListenerManager<StateChangedListener> stateListeners;
 	
 	public DClient() 
 	{
+		globalListeners = new ListenerManager<>();
 		listeners = new HashMap<>();
 		stateListeners = new ListenerManager<>();
 		
@@ -87,33 +89,48 @@ public class DClient extends DEndPoint
 			Message m = messages.removeFirst();
 			if( m.value instanceof FrameworkMessage.KeepAlive ) {
 				System.out.println( "KEEP ALIVE INTERCEPTED ON BOT" );
-			} else if( m.key == SET_STATE ) {
+				continue;
+			} else if( m.key.equals( SET_STATE ) ) {
 				state = m.value;
 				stateListeners.call( l -> {
 					l.changed( state );
 				});
-			} else {
-				listeners.get( state ).call( m.key, l -> {
+			} 
+			
+			ListenerManager<ClientMessageListener> lm = listeners.get( state );
+			if( lm != null )
+			{
+				lm.call( m.key, l -> {
 					l.receive( m.value );
 				});
 			}
+			globalListeners.call( m.key, l-> {
+				l.receive( m.value );
+			});
 		}
 	}
 	
 	public <E> void on( Object key, ClientMessageListener<E> listener ) 
 	{
-		on( DEFAULT_STATE, key, listener );
+		globalListeners.on( key, listener );
 	}
 	
 	public <E> void on( Object state, Object key, ClientMessageListener<E> listener ) 
 	{
-		ListenerManager<ClientMessageListener> lm = listeners.get( state );
-		if( lm == null )
+		if( state == null )
 		{
-			lm = new ListenerManager<>();
-			listeners.put( state, lm );
+			on( key, listener );
+		} 
+		else
+		{
+			ListenerManager<ClientMessageListener> lm = listeners.get( state );
+			if( lm == null )
+			{
+				lm = new ListenerManager<>();
+				listeners.put( state, lm );
+			}
+			lm.on( key, listener );
 		}
-		lm.on( key, listener );
 	}
 	
 	public void onStateChanged( StateChangedListener listener )
