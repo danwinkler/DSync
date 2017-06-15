@@ -1,4 +1,4 @@
-package com.danwink.dsync;
+package com.danwink.dsync.sync;
 
 public abstract class SyncObject<E>
 {

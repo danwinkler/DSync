@@ -1,9 +1,12 @@
-package com.danwink.dsync;
+package com.danwink.dsync.sync;
 
 import java.util.HashMap;
 
-import com.danwink.dsync.SyncServer.AddPacket;
-import com.danwink.dsync.SyncServer.PartialPacket;
+import com.danwink.dsync.DClient;
+import com.danwink.dsync.ListenerManager;
+import com.danwink.dsync.PartialUpdatable;
+import com.danwink.dsync.sync.SyncServer.AddPacket;
+import com.danwink.dsync.sync.SyncServer.PartialPacket;
 import com.esotericsoftware.kryonet.FrameworkMessage.KeepAlive;
 
 public class SyncClient

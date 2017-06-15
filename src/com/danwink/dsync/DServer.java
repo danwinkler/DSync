@@ -67,13 +67,15 @@ public class DServer extends DEndPoint
 	@SuppressWarnings( "rawtypes" )
 	ListenerManager<ServerMessageListener> globalListeners;
 	HashMap<Object, ListenerManager<ServerMessageListener>> listeners;
+	ListenerManager<StateChangedListener> stateListeners;
 	
-	Server server;
+	public Server server;
 	
 	public DServer()
 	{
 		globalListeners = new ListenerManager<>();
 		listeners = new HashMap<>();
+		stateListeners = new ListenerManager<>();
 		
 		server = new Server( WRITE_BUFFER, OBJECT_BUFFER );
 		server.getKryo().register( Message.class );
@@ -177,6 +179,11 @@ public class DServer extends DEndPoint
 		public void update( float dt );
 	}
 	
+	public interface StateChangedListener
+	{
+		public void changed( Object o );
+	}
+	
 	public static class MessagePacket implements Poolable
 	{
 		int destination;
@@ -248,10 +255,18 @@ public class DServer extends DEndPoint
 		}
 	}
 	
+	public void onState( StateChangedListener l )
+	{
+		stateListeners.on( l );
+	}
+	
 	public void setState( Object o )
 	{
 		state = o;
 		server.sendToAllTCP( new Message( SET_STATE, o ) );
+		stateListeners.call( s -> {
+			s.changed( state );
+		});
 	}
 	
 	public void clearListeners()

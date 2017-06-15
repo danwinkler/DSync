@@ -1,7 +1,10 @@
-package com.danwink.dsync;
+package com.danwink.dsync.sync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import com.danwink.dsync.DServer;
+import com.danwink.dsync.PartialUpdatable;
 
 public class SyncServer
 {
