@@ -161,4 +161,10 @@ public class DClient extends DEndPoint
 	{
 		messages.addLast( new Message( DISCONNECTED, null ) );
 	}
+
+	public void stop()
+	{
+		c.close();
+		c.stop();
+	}
 }
