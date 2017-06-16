@@ -30,9 +30,7 @@ public class SyncServer
 	public SyncServer( DServer server, Object state )
 	{
 		this.server = server;
-		Arrays.asList( registerClasses ).forEach( c -> {
-			server.server.getKryo().register( c );
-		});
+		server.register( registerClasses );
 		
 		server.on( state, DServer.CONNECTED, (id, o) -> {
 			for( int i = 0; i < syncies.size(); i++ )
