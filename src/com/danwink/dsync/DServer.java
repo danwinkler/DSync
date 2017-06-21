@@ -6,10 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pool.Poolable;
-import com.badlogic.gdx.utils.Pools;
-import com.danwink.dsync.DClient.ClientMessageListener;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 
@@ -62,8 +58,6 @@ public class DServer extends DEndPoint
 	HashMap<Integer, Connection> connections = new HashMap<Integer, Connection>();
 	ArrayList<Connection> connectionsArr = new ArrayList<Connection>();
 	
-	Pool<MessagePacket> mpPool = Pools.get( MessagePacket.class );
-	
 	@SuppressWarnings( "rawtypes" )
 	ListenerManager<ServerMessageListener> globalListeners;
 	HashMap<Object, ListenerManager<ServerMessageListener>> listeners;
@@ -104,7 +98,7 @@ public class DServer extends DEndPoint
 	
 	public void sendTCP( int id, Object key, Object value )
 	{
-		MessagePacket mp = mpPool.obtain();
+		MessagePacket mp = new MessagePacket();
 		mp.init( id, key, value );
 		messagesToSend.addLast( mp );
 	}
@@ -168,6 +162,7 @@ public class DServer extends DEndPoint
 						e.printStackTrace();
 					}
 				}
+				server.stop();
 			});
 			t.setName( "DServer" );
 			t.start();
@@ -184,7 +179,7 @@ public class DServer extends DEndPoint
 		public void changed( Object o );
 	}
 	
-	public static class MessagePacket implements Poolable
+	public static class MessagePacket
 	{
 		int destination;
 		Message m;
@@ -358,7 +353,6 @@ public class DServer extends DEndPoint
 						{
 							c.sendTCP( packet.m );
 							i.remove();
-							mpPool.free( packet );
 						}
 					}
 				}
@@ -377,7 +371,6 @@ public class DServer extends DEndPoint
 
 	public void stop()
 	{
-		server.stop();
 		running = false;
 	}
 }

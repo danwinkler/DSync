@@ -1,6 +1,7 @@
 package com.danwink.dsync;
 
-import com.badlogic.gdx.math.MathUtils;
+import java.util.Random;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.FrameworkMessage.KeepAlive;
@@ -8,7 +9,7 @@ import com.esotericsoftware.kryonet.Listener;
 
 public class FakeConnection extends Connection
 {
-	public int id = MathUtils.random( 50, Integer.MAX_VALUE );
+	public int id = (new Random()).nextInt( 10000000 ) + 100;
 	public Listener l;
 	public Kryo k;
 	
