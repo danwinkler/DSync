@@ -26,6 +26,13 @@ public class FakeClient extends DClient
 	}
 	
 	@Override
+	public void stop()
+	{
+		super.stop();
+		server.disconnected( conn );
+	}
+	
+	@Override
 	public void sendTCP( Object key, Object value ) 
 	{
 		server.messages.addLast( new Message( key, value, conn.id ) );

@@ -2,6 +2,8 @@ package com.danwink.dsync.sync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import com.danwink.dsync.DServer;
 import com.danwink.dsync.PartialUpdatable;
@@ -20,7 +22,7 @@ public class SyncServer
 	
 	int nextId = 0;
 	
-	ArrayList<SyncObject> syncies = new ArrayList<SyncObject>();
+	LinkedList<SyncObject> syncies = new LinkedList<SyncObject>();
 	
 	public SyncServer( DServer server )
 	{
@@ -33,9 +35,8 @@ public class SyncServer
 		server.register( registerClasses );
 		
 		server.on( state, DServer.CONNECTED, (id, o) -> {
-			for( int i = 0; i < syncies.size(); i++ )
+			for( SyncObject so : syncies )
 			{
-				SyncObject so = syncies.get( i );
 				server.sendTCP( id, initial, new AddPacket( so.getClass().getSimpleName().hashCode(), so ) );
 			}
 		});
@@ -50,14 +51,14 @@ public class SyncServer
 	
 	public void update()
 	{
-		for( int i = 0; i < syncies.size(); i++ )
+		Iterator<SyncObject> i = syncies.iterator();
+		while( i.hasNext() )
 		{
-			SyncObject so = syncies.get( i );
+			SyncObject so = i.next();
 			if( so.remove ) 
 			{
 				server.broadcastTCP( remove, so.syncId );
-				syncies.remove( i );
-				i--;
+				i.remove();
 			} 
 			else if( so.update ) 
 			{
@@ -98,5 +99,10 @@ public class SyncServer
 			this.classHash = classHash;
 			this.object = object;
 		}
+	}
+
+	public void clear()
+	{
+		syncies.clear();
 	}
 }
