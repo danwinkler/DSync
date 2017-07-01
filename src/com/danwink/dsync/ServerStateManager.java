@@ -9,9 +9,13 @@ public class ServerStateManager implements Updateable
 	HashMap<Object, ServerState> states;
 	
 	ServerState current;
+
+	DServer server;
 	
 	public ServerStateManager( DServer server )
 	{
+		this.server = server;
+		
 		states = new HashMap<>();
 		
 		server.onState( o -> {
@@ -40,5 +44,7 @@ public class ServerStateManager implements Updateable
 	public void add( Object o, ServerState s )
 	{
 		states.put( o, s );
+		
+		server.setupStateListener( o );
 	}
 }

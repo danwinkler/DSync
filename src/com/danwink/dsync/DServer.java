@@ -48,7 +48,7 @@ import com.esotericsoftware.kryonet.Server;
 public class DServer extends DEndPoint
 {
 	public static final int WRITE_BUFFER = 5000000;
-	public static final int OBJECT_BUFFER = 32000;
+	public static final int OBJECT_BUFFER = 64000;
 	
 	Thread messageSenderThread;
 	public ThreadRunner tr;
@@ -247,6 +247,16 @@ public class DServer extends DEndPoint
 				listeners.put( state, lm );
 			}
 			lm.on( key, listener );
+		}
+	}
+	
+	void setupStateListener( Object state )
+	{
+		ListenerManager<ServerMessageListener> lm = listeners.get( state );
+		if( lm == null )
+		{
+			lm = new ListenerManager<>();
+			listeners.put( state, lm );
 		}
 	}
 	

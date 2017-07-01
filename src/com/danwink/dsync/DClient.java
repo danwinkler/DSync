@@ -40,7 +40,7 @@ public class DClient extends DEndPoint
 		listeners = new HashMap<>();
 		stateListeners = new ListenerManager<>();
 		
-		c = new Client( 128000, 32000 );
+		c = new Client( 128000, DServer.OBJECT_BUFFER );
 		c.getKryo().register( Message.class );
 		
 		c.addListener( this );
