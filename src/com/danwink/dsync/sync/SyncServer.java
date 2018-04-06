@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.danwink.dsync.DEndPoint;
 import com.danwink.dsync.DServer;
 import com.danwink.dsync.PartialUpdatable;
 
@@ -26,7 +27,7 @@ public class SyncServer
 	
 	public SyncServer( DServer server )
 	{
-		this( server, null );
+		this( server, DEndPoint.DEFAULT_STATE );
 	}
 	
 	public SyncServer( DServer server, Object state )
