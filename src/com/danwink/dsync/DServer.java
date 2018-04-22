@@ -218,9 +218,13 @@ public class DServer extends DEndPoint
 		while( hasMessages() )
 		{
 			Message m = messages.removeFirst();
-			listeners.get( state ).call( m.key, l -> {
-				l.receive( m.sender, m.value );
-			});
+			ListenerManager<ServerMessageListener> lm = listeners.get( state );
+			if( lm != null )
+			{
+				lm.call( m.key, l -> {
+					l.receive( m.sender, m.value );
+				});
+			}
 			globalListeners.call( m.key, l -> {
 				l.receive( m.sender, m.value );
 			});
