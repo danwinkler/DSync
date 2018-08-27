@@ -1,9 +1,8 @@
 package com.danwink.dsync.agent;
 
-public abstract class SyncAgent<Type extends AgentInstantiator>
+public abstract class SyncAgent
 {
 	public int syncId;
-	public Type type;
 	public boolean alive = true;
 	public Object syncMessage;
 	
@@ -13,5 +12,5 @@ public abstract class SyncAgent<Type extends AgentInstantiator>
 	}
 	
 	public abstract Object initial();
-	public abstract void processMessage( Type type, Object o );
+	public abstract void processMessage( Object o );
 }

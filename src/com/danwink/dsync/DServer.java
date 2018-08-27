@@ -48,7 +48,7 @@ import com.esotericsoftware.kryonet.Server;
 public class DServer extends DEndPoint
 {
 	public static final int WRITE_BUFFER = 5000000;
-	public static final int OBJECT_BUFFER = 64000;
+	public static final int OBJECT_BUFFER = 128000;
 	
 	Thread messageSenderThread;
 	public ThreadRunner tr;

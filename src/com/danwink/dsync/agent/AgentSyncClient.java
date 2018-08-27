@@ -29,33 +29,47 @@ public class AgentSyncClient<E extends SyncAgent>
 		
 		// DRY these two out
 		client.on( AgentSyncServer.initial, (Packet p) -> {
-			E a = (E)p.type.create();
-			a.syncId = p.id;
-			a.processMessage( p.type, p.payload );
-			
-			agents.add( a );
-			agentMap.put( a.syncId, a );
-			
-			addListenerManager.call( p.type, l -> {
-				l.event( a );
-			});
+			try
+			{
+				E a = (E)Class.forName(p.agentClassId).newInstance();
+				a.syncId = p.id;
+				a.processMessage( p.payload );
+				
+				agents.add( a );
+				agentMap.put( a.syncId, a );
+				
+				addListenerManager.call( l -> {
+					l.event( a );
+				});
+			}
+			catch( InstantiationException | IllegalAccessException | ClassNotFoundException e )
+			{
+				e.printStackTrace();
+			}
 		});
 		
 		client.on( AgentSyncServer.add, (Packet p) -> {
-			E a = (E)p.type.create();
-			a.syncId = p.id;
-			a.processMessage( p.type, p.payload );
-			
-			agents.add( a );
-			agentMap.put( a.syncId, a );
-			
-			addListenerManager.call( p.type, l -> {
-				l.event( a );
-			});
+			try
+			{
+				E a = (E)Class.forName(p.agentClassId).newInstance();
+				a.syncId = p.id;
+				a.processMessage( p.payload );
+				
+				agents.add( a );
+				agentMap.put( a.syncId, a );
+				
+				addListenerManager.call( l -> {
+					l.event( a );
+				});
+			}
+			catch( InstantiationException | IllegalAccessException | ClassNotFoundException e )
+			{
+				e.printStackTrace();
+			}
 		});
 		
 		client.on( AgentSyncServer.update, (Packet p) -> {
-			agentMap.get( p.id ).processMessage( p.type, p.payload );
+			agentMap.get( p.id ).processMessage( p.payload );
 		});
 		
 		client.on( AgentSyncServer.remove, (Integer id) -> {
@@ -69,9 +83,9 @@ public class AgentSyncClient<E extends SyncAgent>
 		return agents;
 	}
 	
-	public <A> void onAdd( AgentInstantiator c, AgentListener<A> listener )
+	public <A> void onAdd( AgentListener<A> listener )
 	{
-		addListenerManager.on( c, listener );
+		addListenerManager.on( listener );
 	}
 	
 	public interface AgentListener<A>

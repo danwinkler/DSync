@@ -16,7 +16,7 @@ public class AgentSyncServer<E extends SyncAgent>
 	public static final String add = "SYNC.ADD";
 	public static final String update = "SYNC.UPDATE";
 	public static final String initial = "SYNC.INITIAL"; //Sent when agentsync isnt new, but when a user joins so they are seeing it for the first time
-	public static final String partial = "SYNC.PARTIAL";
+	//public static final String partial = "SYNC.PARTIAL";
 	public static final String remove = "SYNC.REMOVE";
 	
 	public static Class<?>[] registerClasses = new Class[] { Packet.class };
@@ -48,7 +48,7 @@ public class AgentSyncServer<E extends SyncAgent>
 			System.out.println( "Client connected" );
 			for( SyncAgent a : agents )
 			{
-				server.sendTCP( id, initial, new Packet( a.syncId, a.type, a.initial() ) );
+				server.sendTCP( id, initial, new Packet( a.syncId, a.getClass(), a.initial() ) );
 			}
 		});
 	}
@@ -66,10 +66,9 @@ public class AgentSyncServer<E extends SyncAgent>
 			} 
 			else if( a.syncMessage != null ) 
 			{
-				server.broadcastTCP( update, new Packet( a.syncId, a.type, a.syncMessage ) );
+				server.broadcastTCP( update, new Packet( a.syncId, null, a.syncMessage ) );
 				a.syncMessage = null;
 			}
-			
 		}
 	}
 	
@@ -77,13 +76,13 @@ public class AgentSyncServer<E extends SyncAgent>
 	{
 		a.syncId = nextId++;
 		agents.add( a );
-		server.broadcastTCP( add, new Packet( a.syncId, a.type, a.initial() ) );
+		server.broadcastTCP( add, new Packet( a.syncId, a.getClass(), a.initial() ) );
 	}
 	
 	public static class Packet
 	{
 		public int id;
-		public AgentInstantiator type;
+		public String agentClassId;
 		public Object payload;
 		
 		public Packet()
@@ -91,10 +90,13 @@ public class AgentSyncServer<E extends SyncAgent>
 			
 		}
 		
-		public Packet( int id, AgentInstantiator type, Object payload )
+		public Packet( int id, Class agentClass, Object payload )
 		{
 			this.id = id;
-			this.type = type;
+			if( agentClass != null )
+			{
+				this.agentClassId = agentClass.getCanonicalName();
+			}
 			this.payload = payload;
 		}
 	}
