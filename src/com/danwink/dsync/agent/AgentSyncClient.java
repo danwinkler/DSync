@@ -11,7 +11,7 @@ import com.danwink.dsync.agent.AgentSyncServer.Packet;
 public class AgentSyncClient<E extends SyncAgent>
 {
 	List<E> agents;
-	HashMap<Integer, SyncAgent> agentMap;
+	public HashMap<Integer, SyncAgent> agentMap;
 	
 	DClient client;
 	
